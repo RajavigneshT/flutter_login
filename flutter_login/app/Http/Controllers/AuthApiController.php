@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers;
 
-//use Dotenv\Validator;
 use Illuminate\Http\Request;
-
-
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use PhpParser\Node\Expr\FuncCall;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Password;
+
 
 class AuthApiController extends Controller
-
 {
-    //validations
+    private function generateToken(User $user)
+    {
+        return $user->createToken('MyApp')->plainTextToken;
+    }
+
     public function register(Request $request)
     {
-        $vaidator = Validator::make(
+        // Validations
+        $validator = Validator::make(
             $request->all(),
             [
                 'name' => 'required|string',
@@ -28,47 +30,71 @@ class AuthApiController extends Controller
             ]
         );
 
-        if ($vaidator->fails()) {
-            return response()->json(['error' => $vaidator->errors()], 400);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
         }
-        //create a new user
 
-        $user = User::create([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => $request->input('password'),
-        ]);
+        $data = $request->all();
+        $data['password'] = Hash::make($data['password']);
 
+        // Create a new user
+        $user = User::create($data);
 
-        return response()->json(['user' => $user, 'message' => 'Registration successfull'], 200);
+        // Generate token using the private method
+        $token = $this->generateToken($user);
+
+        $response = [
+            'token' => $token,
+            'name' => $user->name,
+        ];
+
+        return response()->json(['user' => $user, 'token' => $token, 'message' => 'Registration successful'], 200);
     }
 
     public function login(Request $request)
     {
-        //validation
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|min:6',
-        ]);
+        
+        $credentials = $request->only('email', 'password');
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
-        }
-
-        //Attempt login
-        if (Auth::attempt(['email' => $request->input('email'), 'password' => $request->input('password')])) {
-            //Authentication successfull
+        if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            //$token =$user->createToken('authToken')->accessToken;
-            $token = bcrypt(Str::random(60));
 
-            // Save the token in the user record (optional)
-            $user->api_token = $token;
-            //$user->save();
-            return response()->json(['user' => $user, 'access_token' => $token], 200);
+            // Generate token using the private method
+            $token = $this->generateToken($user);
+
+            $response = [
+                'token' => $token,
+                'name' => $user->name,
+            ];
+
+            return response()->json(['user' => $user, 'token' => $token, 'message' => 'Login successful'], 200);
         } else {
-            // Authentication failed
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
     }
+
+   
+
+    // public function logout(Request $request)
+    // {
+    //     $user = $request->user();
+    //     $user-> tokens()->delete();
+    //     return response()->json(['message' => 'Logout successful'], 200);
+    // }
+
+    public function forgotPassword(Request $request)
+    {
+        // Validate input
+        $request->validate(['email' => 'required|email']);
+
+        // Send password reset link
+        $response = Password::sendResetLink($request->only('email'));
+
+        // Check the response and send appropriate message
+        return $response == Password::RESET_LINK_SENT
+                    ? response()->json(['message' => 'Reset link sent to your email'], 200)
+                    : response()->json(['error' => 'Unable to send reset link'], 400);
+    }
+    
+
 }
