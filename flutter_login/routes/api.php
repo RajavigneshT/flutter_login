@@ -20,3 +20,4 @@ Route::post('/register', [AuthApiController::class, 'register']);
 Route::post('/login', [AuthApiController::class, 'login']); 
 Route::post('/logout',[AuthApiController::class,'logout']);
 Route::post('/forgotpassword',[AuthApiController::class,'forgotPassword']);
+Route::get('/refresh',[AuthApiController::class,'refresh']);
