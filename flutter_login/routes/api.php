@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthApiController;
+use App\Http\Controllers\CRUDController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,3 +22,5 @@ Route::post('/login', [AuthApiController::class, 'login']);
 Route::post('/logout',[AuthApiController::class,'logout']);
 Route::post('/forgotpassword',[AuthApiController::class,'forgotPassword']);
 Route::get('/refresh',[AuthApiController::class,'refresh']);
+
+Route::get('api/usershow',[CRUDController::class,'show']);
