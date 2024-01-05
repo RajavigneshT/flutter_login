@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Psy\CodeCleaner\ReturnTypePass;
 
 class CRUDController extends Controller
 {
@@ -46,12 +47,21 @@ class CRUDController extends Controller
      */
     public function show(Request $request)
     {
-        //validations
-        $request->validate([
-            'ACLValue'=>'required|string',
-        ]);
+        // //Below code used to get user's table value with  ACL value in mandatory in json template
+        // $request->validate([
+        //     'ACLValue'=>'required|string',
+        // ]);
 
-        $users = User::where('ACL', $request->input('ACLValue'))->get();
+        // $users = User::where('ACL', $request->input('ACLValue'))->get();
+        // return response()->json(['users'=>$users]);
+
+        //Below code used to get user's table value with  ACL value in mandatory in url path
+        $aclvalue=$request->query('ACLValue');
+        if(!$aclvalue)
+        {
+            return response()->json(['error'=>'ACL parameter is required'],400);
+        }
+        $users=User::where('ACL',$aclvalue)->get();
         return response()->json(['users'=>$users]);
     }
 
