@@ -70,7 +70,7 @@ class AuthApiController extends Controller
                 'name' => $user->name,
             ];
 
-            return response()->json(['user' => $user, 'token' => $token, 'message' => 'Login successful'], 200);
+            return response()->json(['User created successfully' => $user, 'token' => $token, 'message' => 'Login successful'], 200);
         } else {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

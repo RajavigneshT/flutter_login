@@ -55,7 +55,7 @@ class CRUDController extends Controller
         // $users = User::where('ACL', $request->input('ACLValue'))->get();
         // return response()->json(['users'=>$users]);
 
-        //Below code used to get user's table value with  ACL value in mandatory in url path
+        //Below code used to get user's table value with ACL value mandatory in url path
         $aclvalue=$request->query('ACLValue');
         if(!$aclvalue)
         {
