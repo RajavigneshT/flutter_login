@@ -17,11 +17,11 @@ class PaymentController extends Controller
             'due_date'=>'required|date',
         ]);
 
-        $user= User::find($request->user_id);
-        if(!$user)
-        {
-         return response()->json(['error'=>'User Not Found'],404);
-        }
+        // $user= User::find($request->user_id);
+        // if(!$user)
+        // {
+        //  return response()->json(['error'=>'User Not Found'],404);
+        // }
 
         $existuserid=Payment::
         where('user_id',$request->user_id)->
