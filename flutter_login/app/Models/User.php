@@ -11,6 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    //test
     use HasApiTokens, HasFactory, Notifiable;
     public function sendPasswordResetNotification($token)
     {
