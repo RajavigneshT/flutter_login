@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthApiController;
+use App\Http\Controllers\CreateChildController;
 use App\Http\Controllers\CRUDController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
@@ -19,10 +20,11 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::post('/register', [AuthApiController::class, 'register']);
-Route::post('/login', [AuthApiController::class, 'login']); 
-Route::post('/logout',[AuthApiController::class,'logout']);
-Route::post('/forgotpassword',[AuthApiController::class,'forgotPassword']);
-Route::get('/refresh',[AuthApiController::class,'refresh']);
+Route::post('/login', [AuthApiController::class, 'login']);
+Route::post('/logout', [AuthApiController::class, 'logout']);
+Route::post('/forgotpassword', [AuthApiController::class, 'forgotPassword']);
+Route::get('/refresh', [AuthApiController::class, 'refresh']);
 
-Route::get('api/usershow',[CRUDController::class,'show']);
-Route::post('/createpayment',[PaymentController::class,'create_payment']);
+Route::get('api/usershow', [CRUDController::class, 'show']);
+Route::post('/createpayment', [PaymentController::class, 'create_payment']);
+Route::post('/createchild', [CreateChildController::class, 'createChild']);

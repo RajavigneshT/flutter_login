@@ -15,7 +15,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
     public function sendPasswordResetNotification($token)
     {
-       // $this->notify(new ResetPasswordNotification($token));
+        // $this->notify(new ResetPasswordNotification($token));
     }
 
 
@@ -53,5 +53,10 @@ class User extends Authenticatable
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function createchild()
+    {
+        return $this->hasMany(CreateChildModel::class);
     }
 }
