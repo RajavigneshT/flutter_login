@@ -15,11 +15,11 @@ return new class extends Migration
     {
         Schema::create('create_bus_route_models', function (Blueprint $table) {
             $table->id();
-            $table->string('N_BusRoute_From');  // Consider using ->text() if longer text might be needed
-            $table->string('N_BusRoute_To');    // Consider using ->text() if longer text might be needed
-            $table->unsignedDecimal('N_BusRouteFare_Amount', 8, 2);  // Adjust precision and scale based on your requirements
-            $table->decimal('N_BusRoute_Latitude', 10, 7);  // Adjust precision and scale based on your requirements
-            $table->decimal('N_BusRoute_Longitude', 10, 7);
+            $table->string('N_BusRoute_From');
+            $table->string('N_BusRoute_To');
+            $table->unsignedDecimal('N_BusRouteFare_Amount', 8, 2);
+            $table->decimal('N_BusRoute_Latitude', 10, 7)->default(null);
+            $table->decimal('N_BusRoute_Longitude', 10, 7)->default(null);
             $table->timestamps();
         });
     }

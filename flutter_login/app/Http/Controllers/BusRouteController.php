@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class BusRouteController extends Controller
 {
-    public function createBusRoute(Request $request)
+    public function createbusroute(Request $request)
     {
         try {
             // Start a database transaction
