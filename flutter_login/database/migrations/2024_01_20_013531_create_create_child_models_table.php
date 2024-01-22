@@ -15,8 +15,9 @@ return new class extends Migration
     {
         Schema::create('create_child_models', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->string('IsActive')->default('Y');
-            $table->string('ChildName'); // Corrected column name
+            $table->string('ChildName')->unique(); // Corrected column name
             $table->text('Gender');
             $table->string('SchoolName'); // Corrected column name
             $table->string('BusRoute'); // Corrected column name
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->string('ContactNo');
             $table->string('Address');
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 

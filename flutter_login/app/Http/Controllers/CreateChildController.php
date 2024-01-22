@@ -9,6 +9,7 @@ use Illuminate\Database\QueryException;
 use App\Models\CreateChildModel;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class CreateChildController extends Controller
 {
@@ -41,9 +42,11 @@ class CreateChildController extends Controller
             $createChild = CreateChildModel::create([
                 'user_id' => $request->user_id,
                 'ChildName' => $request->ChildName,
+                'Gender' => $request->Gender,
                 'SchoolName' => $request->SchoolName,
                 'BusRoute' => $request->BusRoute,
                 'ParentName' => $request->ParentName,
+                'ContactNo' => $request->ContactNo,
                 'Address' => $request->Address,
             ]);
 
@@ -57,11 +60,13 @@ class CreateChildController extends Controller
 
             return response()->json(['message' => 'Validation failed', 'errors' => $errors], 422);
         } catch (QueryException $e) {
-            // Handle SQL exceptions
-            Log::error("SQL Exception: " . $e->getMessage());
-
-            return response()->json(['message' => 'Error occurred. SQL Exception.'], 500);
-        } catch (\Exception $e) {
+            if ($e->errorInfo[1] == 1062) {
+                return response()->json(['message' => 'Error: The ChildName Must Be unique. '], 422);
+            } else {
+                Log::error("SQL Exception: " . $e->getMessage());
+                return response()->json(['message' => 'Error occurred. SQL Exception.'], 500);
+            }
+        } catch (Exception $e) {
             // Rollback the transaction in case of an error
             DB::rollback();
 
