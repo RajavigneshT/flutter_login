@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Laravel\Sanctum;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Password;
@@ -16,9 +17,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Exception;
 use Illuminate\Support\Facades\DB;
-
-
-
+use Laravel\Sanctum\Sanctum as SanctumSanctum;
 
 class AuthApiController extends Controller
 {
@@ -89,7 +88,7 @@ class AuthApiController extends Controller
                 $user = Auth::user();
                 $token = $this->generateToken($user);
                 $response = ['token' => $token, 'name' => $user->name,];
-                return response()->json(['Logged in Successfully'], 200);
+                return response()->json(['token' => $token, 'message' => 'Logged in Successfully'], 200);
             } else {
                 $userWithEmail = User::where('email', $credentials['email'])->first();
                 $userWithName = User::where('name', $credentials['email'])->first();
@@ -112,13 +111,27 @@ class AuthApiController extends Controller
         }
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        Auth::logout();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Successfully logged out',
-        ]);
+        $user = Auth::user();
+
+        if ($user) {
+            // Revoke the user's token using Laravel Sanctum
+            Sanctum::revokeUserTokens($user);
+
+            // Log the user out
+            Auth::logout();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Successfully logged out',
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not authenticated',
+            ], 401);
+        }
     }
 
     public function forgotPassword(Request $request)
