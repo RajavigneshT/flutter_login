@@ -31,5 +31,6 @@ Route::group(['middleware' => ['web', 'auth:sanctum']], function () {
 Route::post('/register', [AuthApiController::class, 'register']);
 Route::post('/login', [AuthApiController::class, 'login']);
 Route::post('/logout', [AuthApiController::class, 'logout']);
-Route::post('/forgotpassword', [AuthApiController::class, 'forgotPassword']);
+Route::post('/forgot', [AuthApiController::class, 'forgot']);
+Route::post('/reset', [AuthApiController::class, 'reset']);
 Route::get('/refresh', [AuthApiController::class, 'refresh']);

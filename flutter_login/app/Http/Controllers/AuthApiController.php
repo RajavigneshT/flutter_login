@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
+use Exception;
 use App\Models\User;
 use Laravel\Sanctum;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use App\Mail\ResetPasswordEmail;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Validation\ValidationException;
-use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Models\ForgetPasswordRequest;
+use App\Models\PasswordReset;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum as SanctumSanctum;
 
 class AuthApiController extends Controller
@@ -117,7 +120,7 @@ class AuthApiController extends Controller
 
         if ($user) {
             // Revoke the user's token using Laravel Sanctum
-            Sanctum::revokeUserTokens($user);
+            //Sanctum::revokeUserTokens($user);
 
             // Log the user out
             Auth::logout();
@@ -134,23 +137,72 @@ class AuthApiController extends Controller
         }
     }
 
-    public function forgotPassword(Request $request)
+    public function forgot(ForgetPasswordRequest $request): JsonResponse
     {
-        // Validate input
-        $request->validate(['email' => 'required|email']);
+        $user = ($query = User::query());
+        $email = $request->input('email');
+        $user = $user->where($query->qualifyColumn('email'), $email)->first();
+        Log::info($user);
 
-        // Send password reset link
-        $response = Password::sendResetLink($request->only('email'));
-
-        // Check the response and send appropriate message
-        if ($response == Password::RESET_LINK_SENT) {
-            // Send a password reset email
-            Mail::to($request->email)->send(new ResetPasswordEmail());
-
-            return response()->json(['message' => 'Reset link sent to your email'], 200);
-        } else {
-            return response()->json(['error' => 'Unable to send reset link'], 400);
+        if ($user == null) {
+            return response()->json(['message' => 'Incorrect Email Address provided'], 484);
         }
+        //random pin generate to mail
+        $resetpasswordtoken = str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        if (!$userPassReset = PasswordReset::where('email', $email)->first()) {
+            PasswordReset::create([
+                'email' => $email,
+                'token' => $resetpasswordtoken,
+            ]);
+        } else {
+            //store token in DB eg.1 hr
+            $userPassReset->update([
+                'email' => $email,
+                'token' => $resetpasswordtoken,
+            ]);
+        }
+        //$user->notify(new PasswordReset($user, $resetpasswordtoken));
+
+
+        return new JsonResponse(['message' => 'A code has been sent to your email address']);
+    }
+
+
+    public function reset(PasswordReset $request)
+    {
+
+        $attributes = $request->validated();
+        $user = User::where('email', $attributes['email'])->first();
+        Password::sendResetLink(['email' => $attributes['email']]);
+
+
+        if (!$user) {
+            return response()->json(['No record found'], 400);
+        }
+        $resetrequest = PasswordReset::where('email', $user->email)->first();
+
+        if (!$resetrequest || $resetrequest->token != $request->token) {
+            return response()->json(['An Error occured , Token mismatch'], 400);
+        }
+        //update user password
+        $user->fill([
+            'password' => Hash::make($attributes['password']),
+        ]);
+        $user->save();
+
+        //delete token
+        $user->tokens()->delete();
+
+        //get token for Auth
+        $token = $user->createToken('authToken')->plainTextToken;
+
+        //create response
+        $loginresponse = [
+            'user' => User::make($user),
+            'token' => $token
+        ];
+        return response()->json([$loginresponse, 'Password Reset Success'], 200);
     }
 
 
