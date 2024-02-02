@@ -28,6 +28,7 @@ Route::group(['middleware' => ['web', 'auth:sanctum']], function () {
 //Public Route
 Route::post('/createchild', [CreateChildController::class, 'createChild'])->name('createchild');
 
+
 Route::get('/usershow', [UserReportController::class, 'usershow']);
 Route::post('/register', [AuthApiController::class, 'register']);
 Route::post('/login', [AuthApiController::class, 'login']);
@@ -36,4 +37,6 @@ Route::post('/forgot', [AuthApiController::class, 'forgot'])->name('forgot');
 Route::post('/resetpassword', [AuthApiController::class, 'resetpassword'])->name('resetpassword');
 Route::get('/refresh', [AuthApiController::class, 'refresh']);
 Route::put('/updatechild/{id}', [CreateChildController::class, 'updatechild']);
+Route::delete('/deletechild/{id}', [CreateChildController::class, 'deletechild'])->name('deletechild');
+
 

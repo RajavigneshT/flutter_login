@@ -98,12 +98,27 @@ class CreateChildController extends Controller
             }
             //Log::info($validator);
             $createChild=CreateChildModel::find($id);
-            Log::info($createChild);
 
             if(!$createChild){
                 return response()->json(['message'=>'User Not Found'],400);
             }
-        //dd  $createChild =createChild::update([
+
+            $attributes = [
+                'ChildName', 'Gender', 'SchoolName', 'BusRoute', 'ParentName', 'Address'
+            ];
+
+            $updateRequired = false;
+
+            foreach ($attributes as $attribute) {
+                Log::info($attribute);
+
+            if ($request->filled($attribute) && $request->input($attribute) != $createChild->$attribute) {
+            
+                $updateRequired = true;
+                break;
+            }
+        }
+             if($updateRequired){
             $createChild->ChildName=$request->input('ChildName');
             $createChild->Gender=$request->input('Gender');
             $createChild->SchoolName=$request->input('SchoolName');
@@ -111,6 +126,9 @@ class CreateChildController extends Controller
             $createChild->ParentName=$request->input('ParentName');
             $createChild->Address=$request->input('Address');
             $createChild->save();
+             }else{
+                return response()->json(['message'=>'You did not updated anything !'],401);
+             }
             DB::commit();
 
             Log::info($createChild);
@@ -139,15 +157,21 @@ class CreateChildController extends Controller
         }
     }
 
-        public function delete(Request $request)
+        public function deletechild(Request $request,$id)
     {
         try {
             DB::beginTransaction();
-
-            $validator =validator::make($request->all(),[
-
-            ]);
             
+            $createChild=CreateChildModel::find($id);
+            if(!$createChild)
+            {
+                return response()->json(['message'=>'User Not Found'],515);
+            }else
+            {
+                $createChild->delete();
+            }
+            DB::commit();
+            return response()->json(['message'=>'Child Deleted successfully']);
 
         }catch (ValidationException $e) {
             // Handle validation errors and log the specific fields that caused the failure
