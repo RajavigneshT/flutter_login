@@ -76,4 +76,100 @@ class CreateChildController extends Controller
             return response()->json(['message' => 'Error occurred. Transaction rolled back.'], 500);
         }
     }
+
+    public function updatechild(Request $request,$id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $validator =validator::make($request->all(),[
+                //'user_id'=>'required|exists:users,id',
+                'ChildName' => 'required',
+                'Gender'=>'required',
+                'SchoolName' => 'required',
+                'BusRoute' => 'required',
+                'ParentName' => 'required',
+                'Address' => 'required',
+            ]);
+            if($validator->fails()){
+                $failedFields = implode(', ', $validator->errors()->keys());
+                Log::info("Validation failed for fields: $failedFields");
+                throw new ValidationException($validator);
+            }
+            //Log::info($validator);
+            $createChild=CreateChildModel::find($id);
+            Log::info($createChild);
+
+            if(!$createChild){
+                return response()->json(['message'=>'User Not Found'],400);
+            }
+        //dd  $createChild =createChild::update([
+            $createChild->ChildName=$request->input('ChildName');
+            $createChild->Gender=$request->input('Gender');
+            $createChild->SchoolName=$request->input('SchoolName');
+            $createChild->BusRoute=$request->input('BusRoute');
+            $createChild->ParentName=$request->input('ParentName');
+            $createChild->Address=$request->input('Address');
+            $createChild->save();
+            DB::commit();
+
+            Log::info($createChild);
+            return response()->json(['Child updated  successfully' => true, 'child' => $createChild], 200);
+
+        }catch (ValidationException $e) {
+            // Handle validation errors and log the specific fields that caused the failure
+            $errors = $e->errors();
+
+            return response()->json(['message' => 'Validation failed', 'errors' => $errors], 422);
+        } catch (QueryException $e) {
+            if ($e->errorInfo[1] == 1062) {
+                return response()->json(['message' => 'Error: The ChildName Must Be unique. '], 422);
+            } else {
+                Log::error("SQL Exception: " . $e->getMessage());
+                return response()->json(['message' => 'Error occurred. SQL Exception.'], 500);
+            }
+        } catch (Exception $e) {
+            // Rollback the transaction in case of an error
+            DB::rollback();
+
+            // Handle other exceptions
+            Log::error("Unexpected Exception: " . $e->getMessage());
+
+            return response()->json(['message' => 'Error occurred. Transaction rolled back.'], 500);
+        }
+    }
+
+        public function delete(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $validator =validator::make($request->all(),[
+
+            ]);
+            
+
+        }catch (ValidationException $e) {
+            // Handle validation errors and log the specific fields that caused the failure
+            $errors = $e->errors();
+
+            return response()->json(['message' => 'Validation failed', 'errors' => $errors], 422);
+        } catch (QueryException $e) {
+            if ($e->errorInfo[1] == 1062) {
+                return response()->json(['message' => 'Error: The ChildName Must Be unique. '], 422);
+            } else {
+                Log::error("SQL Exception: " . $e->getMessage());
+                return response()->json(['message' => 'Error occurred. SQL Exception.'], 500);
+            }
+        } catch (Exception $e) {
+            // Rollback the transaction in case of an error
+            DB::rollback();
+
+            // Handle other exceptions
+            Log::error("Unexpected Exception: " . $e->getMessage());
+
+            return response()->json(['message' => 'Error occurred. Transaction rolled back.'], 500);
+        }
+    }
+        
 }

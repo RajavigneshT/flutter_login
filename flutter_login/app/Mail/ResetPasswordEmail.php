@@ -56,4 +56,5 @@ class ResetPasswordEmail extends Mailable
     {
         return [];
     }
+    
 }

@@ -9,4 +9,14 @@ class PasswordReset extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    public function rules()
+    {
+        return [
+            'email' => 'required|email',
+            'token' => 'required',
+            'password' => 'required',
+        ];
+    }
+    
 }
