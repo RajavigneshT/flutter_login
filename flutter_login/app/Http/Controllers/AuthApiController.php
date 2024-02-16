@@ -24,6 +24,7 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum as SanctumSanctum;
 use App\Notifications\PasswordResetNotification;
 use Monolog\ResettableInterface;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthApiController extends Controller
 {
@@ -83,59 +84,29 @@ class AuthApiController extends Controller
         }
     }
 
-    public  function login(Request $request)
+    public function logout(Request $request): JsonResponse
     {
         try {
-            $credentials = $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
-            if (Auth::attempt($credentials)) {
-                $user = Auth::user();
-                $token = $this->generateToken($user);
-                $response = ['token' => $token, 'name' => $user->name,];
-                return response()->json(['token' => $token, 'message' => 'Logged in Successfully'], 200);
-            } else {
-                $userWithEmail = User::where('email', $credentials['email'])->first();
-                $userWithName = User::where('name', $credentials['email'])->first();
-
-                if (!$userWithEmail && !$userWithName) {
-                    return response()->json(['email' => 'Email or name does not match with our records'], 422);
+            $user = $request->user();
+            
+            if ($user) {
+                $token = $user->currentAccessToken();
+                Log::info("Token ID to be deleted: " . optional($token)->id);
+                if ($token) {
+                    $token->delete();
                 }
-                throw new \Exception('Unauthorized');
             }
-        } catch (ValidationException $e) {
-            //Handle validation errors
-            $errors = $e->errors();
-            return response()->json(['message' => 'Validation failed', 'error' => $errors], 422);
-        } catch (AuthenticationException $e) {
-            // Handle authentication errors
-            return response()->json(['error' => 'Unauthorized'], 401);
+    
+            Auth::guard('web')->logout();
+    
+            return response()->json(['message' => 'User logged out successfully'], 200);
         } catch (Exception $e) {
             Log::error("Unexpected Exception: " . $e->getMessage());
             return response()->json(['error' => 'Unexpected error'], 500);
         }
     }
-
-    public function logout(Request $request)
-    {
-        $user = Auth::user();
-
-        if ($user) {
-            Auth::logout();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Successfully logged out',
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'User not authenticated',
-            ], 401);
-        }
-    }
-
+   
+   
     public function forgot(ForgetPasswordRequest $request): JsonResponse
 {
     $email = $request->input('email');

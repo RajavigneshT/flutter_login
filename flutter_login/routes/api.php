@@ -19,24 +19,30 @@ use App\Http\Controllers\CreateChildController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-//Protected Route
-Route::group(['middleware' => ['web', 'auth:sanctum']], function () {
+// //Protected Route
+// Route::group(['middleware' => ['web', 'auth:sanctum']], function () {
+// Route::post('/createpayment', [PaymentController::class, 'create_payment'])->name('createpayment');
+// Route::post('/createbusroute', [BusRouteController::class, 'createbusroute'])->name('createbusroute');
+// Route::post('/createchild', [CreateChildController::class, 'createChild'])->name('createchild');
+// Route::put('/updatechild/{id}', [CreateChildController::class, 'updatechild']);
+// Route::delete('/deletechild/{id}', [CreateChildController::class, 'deletechild'])->name('deletechild');
+// });
+Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/createpayment', [PaymentController::class, 'create_payment'])->name('createpayment');
     Route::post('/createbusroute', [BusRouteController::class, 'createbusroute'])->name('createbusroute');
+    Route::post('/createchild', [CreateChildController::class, 'createChild'])->name('createchild');
+    Route::put('/updatechild/{id}', [CreateChildController::class, 'updatechild']);
+    Route::delete('/deletechild/{id}', [CreateChildController::class, 'deletechild'])->name('deletechild');
 });
 
+
 //Public Route
-Route::post('/createchild', [CreateChildController::class, 'createChild'])->name('createchild');
-
-
-Route::get('/usershow', [UserReportController::class, 'usershow']);
-Route::post('/register', [AuthApiController::class, 'register']);
 Route::post('/login', [AuthApiController::class, 'login']);
 Route::post('/logout', [AuthApiController::class, 'logout']);
+Route::get('/usershow', [UserReportController::class, 'usershow']);
+Route::post('/register', [AuthApiController::class, 'register']);
 Route::post('/forgot', [AuthApiController::class, 'forgot'])->name('forgot');
 Route::post('/resetpassword', [AuthApiController::class, 'resetpassword'])->name('resetpassword');
 Route::get('/refresh', [AuthApiController::class, 'refresh']);
-Route::put('/updatechild/{id}', [CreateChildController::class, 'updatechild']);
-Route::delete('/deletechild/{id}', [CreateChildController::class, 'deletechild'])->name('deletechild');
 
 
